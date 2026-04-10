@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prescrix — Smart Medical Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ========== AUTH SCREEN ========== -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-icon">⚕</div>
+      <div class="brand-name">Prescrix</div>
+    </div>
+    <p class="brand-tag">Your medical life, organized.</p>
+    <div class="auth-tabs">
+      <button class="atab active" id="tabLogin" onclick="switchAuth('login')">Sign In</button>
+      <button class="atab" id="tabSignup" onclick="switchAuth('signup')">Create Account</button>
+    </div>
+
+    <div id="loginForm">
+      <div class="fgroup">
+        <label>Email Address</label>
+        <input type="email" id="li_email" placeholder="you@example.com" class="finput">
+        <span class="ferr" id="li_email_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="li_pass" placeholder="Your password" class="finput">
+          <button type="button" class="pw-toggle" onclick="togglePw('li_pass',this)">👁</button>
+        </div>
+        <span class="ferr" id="li_pass_err"></span>
+      </div>
+      <button class="btn-primary w100" onclick="doLogin()">Sign In</button>
+      <p class="auth-switch">No account? <a onclick="switchAuth('signup')">Sign up free</a></p>
+    </div>
+
+    <div id="signupForm" style="display:none">
+      <div class="fgroup">
+        <label>Full Name</label>
+        <input type="text" id="su_name" placeholder="Your full name" class="finput">
+        <span class="ferr" id="su_name_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Email Address</label>
+        <input type="email" id="su_email" placeholder="you@example.com" class="finput">
+        <span class="ferr" id="su_email_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="su_pass" placeholder="Min 6 characters" class="finput">
+          <button type="button" class="pw-toggle" onclick="togglePw('su_pass',this)">👁</button>
+        </div>
+        <span class="ferr" id="su_pass_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Date of Birth</label>
+        <input type="date" id="su_dob" class="finput">
+      </div>
+      <div class="fgroup">
+        <label>Blood Group</label>
+        <select id="su_blood" class="finput fselect">
+          <option value="">Select blood group</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+      <button class="btn-primary w100" onclick="doSignup()">Create My Account</button>
+      <p class="auth-switch">Have an account? <a onclick="switchAuth('login')">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== APP SHELL ========== -->
+<div id="appShell" class="app-shell" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">⚕</div>
+      <span class="sb-logo-text">Prescrix</span>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div>
+        <div class="sb-uname" id="sbName">Loading…</div>
+        <div class="sb-urole">Personal Account</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <a class="nitem active" data-page="dashboard"     onclick="goPage('dashboard')"><span>⊞</span> Dashboard</a>
+      <a class="nitem" data-page="prescriptions" onclick="goPage('prescriptions')"><span>📄</span> Prescriptions</a>
+      <a class="nitem" data-page="doctors"       onclick="goPage('doctors')"><span>👨‍⚕️</span> Doctors</a>
+      <a class="nitem" data-page="notes"         onclick="goPage('notes')"><span>📝</span> Visit Notes</a>
+      <a class="nitem" data-page="timeline"      onclick="goPage('timeline')"><span>🕐</span> Timeline</a>
+      <a class="nitem" data-page="reminders"     onclick="goPage('reminders')">
+        <span>🔔</span> Reminders
+        <span class="nb" id="reminderBadge" style="display:none">0</span>
+      </a>
+      <a class="nitem" data-page="family"        onclick="goPage('family')"><span>👨‍👩‍👧</span> Family</a>
+    </nav>
+    <div class="sb-bottom">
+      <a class="nitem" data-page="profile" onclick="goPage('profile')"><span>⚙</span> Profile & Settings</a>
+      <a class="nitem logout-btn" onclick="doLogout()"><span>↩</span> Logout</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="main-area" id="mainArea">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="burger" onclick="toggleSidebar()" type="button">☰</button>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="gSearch" placeholder="Search prescriptions, doctors, notes…" oninput="globalSearch(this.value)" autocomplete="off">
+        <div class="search-drop" id="searchDrop" style="display:none"></div>
+      </div>
+      <div class="tb-right">
+        <div style="position:relative">
+          <button class="icon-btn" onclick="toggleNotif()" type="button">
+            🔔
+            <span class="notif-dot" id="notifDot" style="display:none"></span>
+          </button>
+          <div class="notif-panel" id="notifPanel" style="display:none">
+            <div class="notif-head">Notifications</div>
+            <div id="notifList"><p class="empty-msg">No notifications yet.</p></div>
+          </div>
+        </div>
+        <div class="tb-avatar" id="tbAvatar" onclick="goPage('profile')" title="Profile">?</div>
+      </div>
+    </header>
+
+    <!-- PAGE: DASHBOARD -->
+    <section id="page-dashboard" class="page active">
+      <div class="ph">
+        <div>
+          <h1 class="ptitle" id="greeting">Dashboard</h1>
+          <p class="psub" id="todayDate"></p>
+        </div>
+        <button class="btn-primary" onclick="openModal('upRxModal')">+ Upload Prescription</button>
+      </div>
+      <div class="stats-row">
+        <div class="scard c-teal" onclick="goPage('prescriptions')">
+          <div class="sicon"></div><div class="snum" id="st-rx">0</div><div class="slabel">Prescriptions</div>
+        </div>
+        <div class="scard c-blue" onclick="goPage('doctors')">
+          <div class="sicon"></div><div class="snum" id="st-dr">0</div><div class="slabel">Doctors</div>
+        </div>
+        <div class="scard c-amber" onclick="goPage('reminders')">
+          <div class="sicon"></div><div class="snum" id="st-rem">0</div><div class="slabel">Reminders</div>
+        </div>
+        <div class="scard c-coral" onclick="goPage('family')">
+          <div class="sicon"></div><div class="snum" id="st-fam">0</div><div class="slabel">Family Members</div>
+        </div>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="dc-head"><h3>Recent Prescriptions</h3><a onclick="goPage('prescriptions')">View all →</a></div>
+          <div id="dash-rx"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dc-head"><h3>Today's Reminders</h3><a onclick="goPage('reminders')">View all →</a></div>
+          <div id="dash-rem"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dc-head"><h3>My Doctors</h3><a onclick="goPage('doctors')">View all →</a></div>
+          <div id="dash-dr"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dc-head"><h3>Recent Notes</h3><a onclick="goPage('notes')">View all →</a></div>
+          <div id="dash-notes"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: PRESCRIPTIONS -->
+    <section id="page-prescriptions" class="page">
+      <div class="ph">
+        <div><h1 class="ptitle">Prescriptions</h1><p class="psub">All your uploaded prescriptions</p></div>
+        <button class="btn-primary" onclick="openModal('upRxModal')">+ Upload New</button>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" onclick="filterRx('all',this)">All</button>
+        <button class="fbtn" onclick="filterRx('active',this)">Active</button>
+        <button class="fbtn" onclick="filterRx('expired',this)">Expired</button>
+        <div style="flex:1"></div>
+        <select class="finput fselect sort-sel" onchange="sortRx(this.value)">
+          <option value="date-desc">Newest First</option>
+          <option value="date-asc">Oldest First</option>
+          <option value="doctor">By Doctor</option>
+        </select>
+      </div>
+      <div id="rxGrid" class="rx-grid"></div>
+    </section>
+
+    <!-- PAGE: DOCTORS -->
+    <section id="page-doctors" class="page">
+      <div class="ph">
+        <div><h1 class="ptitle">My Doctors</h1><p class="psub">All your healthcare providers</p></div>
+        <button class="btn-primary" onclick="openModal('addDrModal')">+ Add Doctor</button>
+      </div>
+      <div id="doctorsGrid" class="doctors-grid"></div>
+    </section>
+
+    <!-- PAGE: NOTES -->
+    <section id="page-notes" class="page">
+      <div class="ph">
+        <div><h1 class="ptitle">Visit Notes</h1><p class="psub">Records from your doctor visits</p></div>
+        <button class="btn-primary" onclick="openModal('addNoteModal')">+ Add Note</button>
+      </div>
+      <div id="notesList"></div>
+    </section>
+
+    <!-- PAGE: TIMELINE -->
+    <section id="page-timeline" class="page">
+      <div class="ph">
+        <div><h1 class="ptitle">Medical Timeline</h1><p class="psub">Your complete health history</p></div>
+      </div>
+      <div id="timelineWrap" class="timeline-wrap"></div>
+    </section>
+
+    <!-- PAGE: REMINDERS -->
+    <section id="page-reminders" class="page">
+      <div class="ph">
+        <div><h1 class="ptitle">Reminders</h1><p class="psub">Medication and appointment alerts</p></div>
+        <button class="btn-primary" onclick="openModal('addRemModal')">+ Add Reminder</button>
+      </div>
+      <div id="remList"></div>
+    </section>
+
+    <!-- PAGE: FAMILY -->
+    <section id="page-family" class="page">
+      <div class="ph">
+        <div><h1 class="ptitle">Family Profiles</h1><p class="psub">Manage health records for your family</p></div>
+        <button class="btn-primary" onclick="openModal('addFamModal')">+ Add Member</button>
+      </div>
+      <div id="famGrid" class="fam-grid"></div>
+    </section>
+
+    <!-- PAGE: PROFILE -->
+    <section id="page-profile" class="page">
+      <div class="ph"><h1 class="ptitle">Profile & Settings</h1></div>
+      <div class="profile-wrap">
+        <div class="profile-card">
+          <div class="profile-avatar-area">
+            <div class="profile-big-avatar" id="profileAvatar">?</div>
+            <button class="btn-outline mt8" type="button" onclick="document.getElementById('avatarFile').click()">Change Photo</button>
+            <input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+          </div>
+          <div class="profile-fields">
+            <div class="fgroup"><label>Full Name</label><input type="text" id="p_name" class="finput" placeholder="Your name"></div>
+            <div class="fgroup"><label>Email (read-only)</label><input type="email" id="p_email" class="finput" readonly style="opacity:0.6;cursor:not-allowed"></div>
+            <div class="fgroup"><label>Phone</label><input type="tel" id="p_phone" class="finput" placeholder="Phone number"></div>
+            <div class="fgroup"><label>Date of Birth</label><input type="date" id="p_dob" class="finput"></div>
+            <div class="fgroup"><label>Blood Group</label>
+              <select id="p_blood" class="finput fselect">
+                <option value="">Select</option>
+                <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+              </select>
+            </div>
+            <div class="fgroup"><label>Known Allergies</label><textarea id="p_allergies" class="finput ftextarea" placeholder="List known allergies…"></textarea></div>
+            <div class="fgroup"><label>Emergency Contact</label><input type="text" id="p_emergency" class="finput" placeholder="Name & phone number"></div>
+            <button class="btn-primary" type="button" onclick="saveProfile()">Save Changes</button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3 class="settings-title">Security</h3>
+          <div class="fgroup"><label>New Password</label><input type="password" id="p_newpass" class="finput" placeholder="Min 6 characters"></div>
+          <div class="fgroup"><label>Confirm Password</label><input type="password" id="p_confirmpass" class="finput" placeholder="Repeat new password"></div>
+          <button class="btn-outline" type="button" onclick="changePassword()">Update Password</button>
+          <hr class="hr-sep">
+          <h3 class="settings-title" style="color:var(--danger)">Danger Zone</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Permanently deletes all your prescriptions, doctors, notes, reminders, and family members.</p>
+          <button class="btn-danger" type="button" onclick="deleteAllData()">Delete All My Data</button>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end main-area -->
+</div><!-- end appShell -->
+
+<!-- =====================================================
+     MODALS — each is a completely independent overlay
+     ===================================================== -->
+
+<!-- Modal: Upload Prescription -->
+<div id="upRxModal" class="modal-backdrop" style="display:none" onclick="bgClose(event,'upRxModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h2>Upload Prescription</h2>
+      <button type="button" class="modal-x" onclick="closeModal('upRxModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgroup">
+        <label>Title / Medicine Name *</label>
+        <input type="text" id="rx_title" class="finput" placeholder="e.g. Blood pressure medication">
+        <span class="ferr" id="rx_title_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Prescribing Doctor</label>
+        <select id="rx_doctor" class="finput fselect"><option value="">Select doctor</option></select>
+      </div>
+      <div class="fgroup">
+        <label>Date of Prescription *</label>
+        <input type="date" id="rx_date" class="finput">
+        <span class="ferr" id="rx_date_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Expiry Date</label>
+        <input type="date" id="rx_expiry" class="finput">
+      </div>
+      <div class="fgroup">
+        <label>Diagnosis / Condition</label>
+        <input type="text" id="rx_diagnosis" class="finput" placeholder="e.g. Hypertension">
+      </div>
+      <div class="fgroup">
+        <label>Upload File (Image or PDF)</label>
+        <div class="file-drop" id="rxFileDrop"
+          onclick="document.getElementById('rxFile').click()"
+          ondragover="dragOver(event)"
+          ondrop="dropFile(event,'rxFile','rxFilePreview')">
+          <div style="font-size:32px">📁</div>
+          <div class="file-drop-text">Click or drag & drop</div>
+          <div class="file-drop-sub">PNG, JPG, PDF — max 10MB</div>
+        </div>
+        <input type="file" id="rxFile" accept="image/*,.pdf" style="display:none" onchange="previewFile(this,'rxFilePreview')">
+        <div id="rxFilePreview" class="file-preview" style="display:none"></div>
+      </div>
+      <div class="fgroup">
+        <label>Status</label>
+        <select id="rx_status" class="finput fselect">
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Notes</label>
+        <textarea id="rx_notes" class="finput ftextarea" placeholder="Additional notes…"></textarea>
+      </div>
+      <div class="fgroup">
+        <label>For Family Member</label>
+        <select id="rx_member" class="finput fselect"><option value="">Self</option></select>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button type="button" class="btn-outline" onclick="closeModal('upRxModal')">Cancel</button>
+      <button type="button" class="btn-primary" onclick="savePrescription()">Save Prescription</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: View Prescription Detail -->
+<div id="viewRxModal" class="modal-backdrop" style="display:none" onclick="bgClose(event,'viewRxModal')">
+  <div class="modal-box modal-wide" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h2 id="viewRxTitle">Prescription Detail</h2>
+      <button type="button" class="modal-x" onclick="closeModal('viewRxModal')">✕</button>
+    </div>
+    <div class="modal-body" id="viewRxBody"></div>
+    <div class="modal-ft">
+      <button type="button" class="btn-danger" id="delRxBtn">Delete Prescription</button>
+      <button type="button" class="btn-outline" onclick="closeModal('viewRxModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Doctor -->
+<div id="addDrModal" class="modal-backdrop" style="display:none" onclick="bgClose(event,'addDrModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h2>Add Doctor</h2>
+      <button type="button" class="modal-x" onclick="closeModal('addDrModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgroup">
+        <label>Doctor Name *</label>
+        <input type="text" id="dr_name" class="finput" placeholder="Dr. Full Name">
+        <span class="ferr" id="dr_name_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Specialization</label>
+        <input type="text" id="dr_spec" class="finput" placeholder="e.g. Cardiologist, General Physician">
+      </div>
+      <div class="fgroup">
+        <label>Phone Number</label>
+        <input type="tel" id="dr_phone" class="finput" placeholder="Contact number">
+      </div>
+      <div class="fgroup">
+        <label>Email Address</label>
+        <input type="email" id="dr_email" class="finput" placeholder="doctor@clinic.com">
+      </div>
+      <div class="fgroup">
+        <label>Hospital / Clinic</label>
+        <input type="text" id="dr_hospital" class="finput" placeholder="Hospital or clinic name">
+      </div>
+      <div class="fgroup">
+        <label>Address</label>
+        <textarea id="dr_address" class="finput ftextarea" placeholder="Full clinic address"></textarea>
+      </div>
+      <div class="fgroup">
+        <label>Next Appointment (optional)</label>
+        <input type="date" id="dr_appt" class="finput">
+      </div>
+      <div class="fgroup">
+        <label>Notes</label>
+        <textarea id="dr_notes" class="finput ftextarea" placeholder="Notes about this doctor…"></textarea>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button type="button" class="btn-outline" onclick="closeModal('addDrModal')">Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveDoctor()">Save Doctor</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Visit Note -->
+<div id="addNoteModal" class="modal-backdrop" style="display:none" onclick="bgClose(event,'addNoteModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h2>Add Visit Note</h2>
+      <button type="button" class="modal-x" onclick="closeModal('addNoteModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgroup">
+        <label>Visit Title *</label>
+        <input type="text" id="note_title" class="finput" placeholder="e.g. Follow-up visit">
+        <span class="ferr" id="note_title_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Doctor</label>
+        <select id="note_doctor" class="finput fselect"><option value="">Select doctor</option></select>
+      </div>
+      <div class="fgroup">
+        <label>Visit Date *</label>
+        <input type="date" id="note_date" class="finput">
+      </div>
+      <div class="fgroup">
+        <label>Diagnosis</label>
+        <input type="text" id="note_diagnosis" class="finput" placeholder="Diagnosis or condition noted">
+      </div>
+      <div class="fgroup">
+        <label>Symptoms</label>
+        <textarea id="note_symptoms" class="finput ftextarea" placeholder="Symptoms discussed…"></textarea>
+      </div>
+      <div class="fgroup">
+        <label>Doctor's Instructions</label>
+        <textarea id="note_instructions" class="finput ftextarea" placeholder="What the doctor advised…"></textarea>
+      </div>
+      <div class="fgroup">
+        <label>Medicines Prescribed</label>
+        <textarea id="note_medicines" class="finput ftextarea" placeholder="List of medicines prescribed…"></textarea>
+      </div>
+      <div class="fgroup">
+        <label>Follow-up Date</label>
+        <input type="date" id="note_followup" class="finput">
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button type="button" class="btn-outline" onclick="closeModal('addNoteModal')">Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Reminder -->
+<div id="addRemModal" class="modal-backdrop" style="display:none" onclick="bgClose(event,'addRemModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h2>Add Reminder</h2>
+      <button type="button" class="modal-x" onclick="closeModal('addRemModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgroup">
+        <label>Reminder Title *</label>
+        <input type="text" id="rem_title" class="finput" placeholder="e.g. Take morning medicine">
+        <span class="ferr" id="rem_title_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Type</label>
+        <select id="rem_type" class="finput fselect">
+          <option value="medicine">💊 Medicine</option>
+          <option value="appointment">📅 Appointment</option>
+          <option value="test">🧪 Lab Test</option>
+          <option value="other">📌 Other</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Date *</label>
+        <input type="date" id="rem_date" class="finput">
+      </div>
+      <div class="fgroup">
+        <label>Time</label>
+        <input type="time" id="rem_time" class="finput">
+      </div>
+      <div class="fgroup">
+        <label>Frequency</label>
+        <select id="rem_freq" class="finput fselect">
+          <option value="once">Once</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Notes</label>
+        <textarea id="rem_notes" class="finput ftextarea" placeholder="Additional details…"></textarea>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button type="button" class="btn-outline" onclick="closeModal('addRemModal')">Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveReminder()">Save Reminder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Family Member -->
+<div id="addFamModal" class="modal-backdrop" style="display:none" onclick="bgClose(event,'addFamModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h2>Add Family Member</h2>
+      <button type="button" class="modal-x" onclick="closeModal('addFamModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgroup">
+        <label>Full Name *</label>
+        <input type="text" id="fam_name" class="finput" placeholder="Member's full name">
+        <span class="ferr" id="fam_name_err"></span>
+      </div>
+      <div class="fgroup">
+        <label>Relationship</label>
+        <select id="fam_rel" class="finput fselect">
+          <option value="">Select relationship</option>
+          <option>Spouse</option><option>Child</option><option>Parent</option>
+          <option>Sibling</option><option>Grandparent</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Date of Birth</label>
+        <input type="date" id="fam_dob" class="finput">
+      </div>
+      <div class="fgroup">
+        <label>Blood Group</label>
+        <select id="fam_blood" class="finput fselect">
+          <option value="">Select</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Known Allergies</label>
+        <input type="text" id="fam_allergies" class="finput" placeholder="e.g. Penicillin, Peanuts">
+      </div>
+      <div class="fgroup">
+        <label>Medical Conditions</label>
+        <textarea id="fam_conditions" class="finput ftextarea" placeholder="Existing medical conditions…"></textarea>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button type="button" class="btn-outline" onclick="closeModal('addFamModal')">Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveFamilyMember()">Add Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirm Dialog -->
+<div id="confirmModal" class="modal-backdrop" style="display:none">
+  <div class="modal-box" style="max-width:400px" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h2 id="confirmTitle">Confirm Action</h2>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMsg" style="color:var(--text2);font-size:15px;line-height:1.6"></p>
+    </div>
+    <div class="modal-ft">
+      <button type="button" class="btn-outline" onclick="resolveConfirm(false)">Cancel</button>
+      <button type="button" class="btn-danger" onclick="resolveConfirm(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
